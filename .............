@@ -1,0 +1,1131 @@
+local Players = game:GetService("Players")
+local ts = game:GetService("TweenService")
+local uis = game:GetService("UserInputService")
+local ChatService = game:GetService("Chat")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local MessagingService = game:GetService("MessagingService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local mouse = player:GetMouse()
+
+-- ==========================================
+-- ✅ 1. تحميل المكتبة وضبط السرعة القصوى
+-- ==========================================
+local DataLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Null-Cherry/Utilities/refs/heads/main/Data/Main.lua", true))()
+local chatServer = DataLibrary.new("GCC1234567890XD")
+
+chatServer.Rate = 0.005 
+chatServer.RecieveOwn = false 
+chatServer.Enabled = true
+
+-- ==========================================
+-- ✅ 2. قائمة الحظر
+-- ==========================================
+local BANNED_USERS = {
+    ["aura_sky08"] = "بسبب تتحدي صاحب السكربت",
+    ["lognnxnxnx"] = "بسبب القذف  وسب الدين ",
+    ["77u77u9999"] = "يطفل يبن المتناكه داخل تسبني ف شاتي لنيك كسمك تعال مكالمه far3on_111 snap",
+    ["hosamm1998"] = " يطفل يبن المتناكه داخل تسبني ف شاتي لنيك كسمك تعال مكالمه far3on_111 snap",
+}
+
+local function getBanReason(username)
+    local lower = string.lower(username)
+    if BANNED_USERS[lower] then
+        return BANNED_USERS[lower]
+    end
+    return "تم حظرك من قبل المطور"
+end
+
+local MY_PLACE_ID = game.PlaceId
+local MY_JOB_ID = game.JobId
+local isUserBanned = BANNED_USERS[string.lower(player.Name)] ~= nil
+
+-- ==========================================
+-- ✅ 3. تنظيف الشات القديم
+-- ==========================================
+local uiParent = gethui and gethui() or game:GetService("CoreGui") or playerGui
+
+if uiParent:FindFirstChild("Far3onChatGui") then uiParent.Far3onChatGui:Destroy() end
+if uiParent:FindFirstChild("Far3onNotifications") then uiParent.Far3onNotifications:Destroy() end
+if uiParent:FindFirstChild("Far3onInfoGui") then uiParent.Far3onInfoGui:Destroy() end
+if uiParent:FindFirstChild("BanScreen") then uiParent.BanScreen:Destroy() end
+
+-- ==========================================
+-- ✅ 4. شاشة الحظر
+-- ==========================================
+if isUserBanned then
+    local banReason = getBanReason(player.Name)
+    
+    local BanScreen = Instance.new("ScreenGui")
+    BanScreen.Name = "BanScreen"
+    BanScreen.Parent = uiParent
+    BanScreen.ResetOnSpawn = false
+    BanScreen.IgnoreGuiInset = true
+    BanScreen.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    BanScreen.DisplayOrder = 999999
+
+    local Background = Instance.new("Frame")
+    Background.Size = UDim2.new(1, 0, 1, 0)
+    Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Background.BackgroundTransparency = 0.8
+    Background.BorderSizePixel = 0
+    Background.Parent = BanScreen
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 400, 0, 310)
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -155)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+    MainFrame.BackgroundTransparency = 0.05
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = BanScreen
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
+    
+    local GlowStroke = Instance.new("UIStroke", MainFrame)
+    GlowStroke.Color = Color3.fromRGB(255, 50, 50)
+    GlowStroke.Thickness = 2
+    GlowStroke.Transparency = 0.4
+
+    local Shadow = Instance.new("ImageLabel")
+    Shadow.Size = UDim2.new(1, 30, 1, 30)
+    Shadow.Position = UDim2.new(0, -15, 0, -15)
+    Shadow.BackgroundTransparency = 1
+    Shadow.Image = "rbxassetid://1316045217"
+    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.ImageTransparency = 0.5
+    Shadow.ScaleType = Enum.ScaleType.Slice
+    Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+    Shadow.ZIndex = 0
+    Shadow.Parent = MainFrame
+
+    local LockIcon = Instance.new("ImageLabel")
+    LockIcon.Size = UDim2.new(0, 55, 0, 55)
+    LockIcon.Position = UDim2.new(0.5, -27, 0, 20)
+    LockIcon.BackgroundTransparency = 1
+    LockIcon.Image = "rbxassetid://136542036946379"
+    LockIcon.ImageColor3 = Color3.fromRGB(255, 70, 70)
+    LockIcon.Parent = MainFrame
+
+    local BanTitle = Instance.new("TextLabel")
+    BanTitle.Size = UDim2.new(1, -30, 0, 40)
+    BanTitle.Position = UDim2.new(0, 15, 0, 85)
+    BanTitle.BackgroundTransparency = 1
+    BanTitle.Text = "⛔ تم حظرك ban"
+    BanTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
+    BanTitle.Font = Enum.Font.GothamBlack
+    BanTitle.TextSize = 22
+    BanTitle.TextXAlignment = Enum.TextXAlignment.Center
+    BanTitle.Parent = MainFrame
+
+    local BanReasonLabel = Instance.new("TextLabel")
+    BanReasonLabel.Size = UDim2.new(1, -30, 0, 45)
+    BanReasonLabel.Position = UDim2.new(0, 15, 0, 130)
+    BanReasonLabel.BackgroundTransparency = 1
+    BanReasonLabel.Text = "• " .. banReason
+    BanReasonLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
+    BanReasonLabel.Font = Enum.Font.GothamBold
+    BanReasonLabel.TextSize = 15
+    BanReasonLabel.TextXAlignment = Enum.TextXAlignment.Center
+    BanReasonLabel.TextWrapped = true
+    BanReasonLabel.Parent = MainFrame
+
+    local Divider = Instance.new("Frame")
+    Divider.Size = UDim2.new(0.8, 0, 0, 1)
+    Divider.Position = UDim2.new(0.1, 0, 0, 185)
+    Divider.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+    Divider.BackgroundTransparency = 0.4
+    Divider.BorderSizePixel = 0
+    Divider.Parent = MainFrame
+
+    local ContactLabel = Instance.new("TextLabel")
+    ContactLabel.Size = UDim2.new(1, -30, 0, 25)
+    ContactLabel.Position = UDim2.new(0, 15, 0, 195)
+    ContactLabel.BackgroundTransparency = 1
+    ContactLabel.Text = "للتواصل:"
+    ContactLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+    ContactLabel.Font = Enum.Font.GothamBold
+    ContactLabel.TextSize = 13
+    ContactLabel.TextXAlignment = Enum.TextXAlignment.Center
+    ContactLabel.Parent = MainFrame
+
+    local ContactContainer = Instance.new("Frame")
+    ContactContainer.Size = UDim2.new(1, -30, 0, 32)
+    ContactContainer.Position = UDim2.new(0, 15, 0, 222)
+    ContactContainer.BackgroundTransparency = 1
+    ContactContainer.Parent = MainFrame
+
+    local Tiktok1Btn = Instance.new("TextButton")
+    Tiktok1Btn.Size = UDim2.new(0.3, -5, 1, 0)
+    Tiktok1Btn.Position = UDim2.new(0, 0, 0, 0)
+    Tiktok1Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    Tiktok1Btn.BackgroundTransparency = 0.2
+    Tiktok1Btn.BorderSizePixel = 0
+    Tiktok1Btn.Text = "تيك qxbrz"
+    Tiktok1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Tiktok1Btn.TextSize = 11
+    Tiktok1Btn.Font = Enum.Font.GothamBold
+    Tiktok1Btn.AutoButtonColor = true
+    Tiktok1Btn.Parent = ContactContainer
+    Instance.new("UICorner", Tiktok1Btn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", Tiktok1Btn).Color = Color3.fromRGB(100, 100, 150)
+
+    local Tiktok2Btn = Instance.new("TextButton")
+    Tiktok2Btn.Size = UDim2.new(0.3, -5, 1, 0)
+    Tiktok2Btn.Position = UDim2.new(0.35, 0, 0, 0)
+    Tiktok2Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    Tiktok2Btn.BackgroundTransparency = 0.2
+    Tiktok2Btn.BorderSizePixel = 0
+    Tiktok2Btn.Text = "تيك far3onchat"
+    Tiktok2Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Tiktok2Btn.TextSize = 11
+    Tiktok2Btn.Font = Enum.Font.GothamBold
+    Tiktok2Btn.AutoButtonColor = true
+    Tiktok2Btn.Parent = ContactContainer
+    Instance.new("UICorner", Tiktok2Btn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", Tiktok2Btn).Color = Color3.fromRGB(100, 100, 150)
+
+    local InstaBtn = Instance.new("TextButton")
+    InstaBtn.Size = UDim2.new(0.3, -5, 1, 0)
+    InstaBtn.Position = UDim2.new(0.7, 0, 0, 0)
+    InstaBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    InstaBtn.BackgroundTransparency = 0.2
+    InstaBtn.BorderSizePixel = 0
+    InstaBtn.Text = "انستجرام qxb.rz"
+    InstaBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InstaBtn.TextSize = 11
+    InstaBtn.Font = Enum.Font.GothamBold
+    InstaBtn.AutoButtonColor = true
+    InstaBtn.Parent = ContactContainer
+    Instance.new("UICorner", InstaBtn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", InstaBtn).Color = Color3.fromRGB(100, 100, 150)
+
+    Tiktok1Btn.MouseButton1Click:Connect(function()
+        if setclipboard then setclipboard("qxbrz") Tiktok1Btn.Text = "✅" task.wait(1) Tiktok1Btn.Text = "📱 qxbrz" end
+    end)
+    Tiktok2Btn.MouseButton1Click:Connect(function()
+        if setclipboard then setclipboard("far3onchat") Tiktok2Btn.Text = "✅" task.wait(1) Tiktok2Btn.Text = "📱 far3on" end
+    end)
+    InstaBtn.MouseButton1Click:Connect(function()
+        if setclipboard then setclipboard("qxb.rz") InstaBtn.Text = "✅" task.wait(1) InstaBtn.Text = "📸 qxb.rz" end
+    end)
+
+    local ExitBtn = Instance.new("TextButton")
+    ExitBtn.Size = UDim2.new(0.35, 0, 0, 35)
+    ExitBtn.Position = UDim2.new(0.325, 0, 1, -48)
+    ExitBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    ExitBtn.BackgroundTransparency = 0.15
+    ExitBtn.BorderSizePixel = 0
+    ExitBtn.Text = "🚪 إخفاء"
+    ExitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ExitBtn.TextSize = 14
+    ExitBtn.Font = Enum.Font.GothamBold
+    ExitBtn.AutoButtonColor = true
+    ExitBtn.Parent = MainFrame
+    Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UIStroke", ExitBtn).Color = Color3.fromRGB(255, 60, 60)
+    Instance.new("UIStroke", ExitBtn).Thickness = 1.5
+
+    ExitBtn.MouseButton1Click:Connect(function()
+        BanScreen:Destroy()
+    end)
+
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -155)
+    MainFrame.BackgroundTransparency = 1
+    MainFrame.Size = UDim2.new(0, 350, 0, 260)
+    ts:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 400, 0, 310),
+        BackgroundTransparency = 0.05
+    }):Play()
+
+    local BlockFrame = Instance.new("Frame")
+    BlockFrame.Size = UDim2.new(1, 0, 1, 0)
+    BlockFrame.BackgroundTransparency = 1
+    BlockFrame.Parent = BanScreen
+    BlockFrame.ZIndex = 999998
+    return
+end
+
+-- ==========================================
+-- ✅ 4.5. طلب انضمام للمجموعة
+-- ==========================================
+task.spawn(function()
+    task.wait(0.5)
+    local GroupService = game:GetService("GroupService")
+    local GroupId = 810506621
+    pcall(function()
+        GroupService:PromptJoinAsync(GroupId)
+    end)
+end)
+
+task.wait(5)
+
+-- ==========================================
+-- ✅ صوت الفتح
+-- ==========================================
+task.spawn(function()
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://107658009777179"
+    sound.Volume = 0.5
+    sound.Parent = game:GetService("SoundService")
+    pcall(function() sound:Play() end)
+    sound.Ended:Connect(function() sound:Destroy() end)
+end)
+
+-- ==========================================
+-- إعدادات الأسماء الخاصة
+-- ==========================================
+local CUSTOM_NAMES = { ["GEAK_4"] = "ּمافيا" }
+local CREATOR_ACCOUNTS = { ["GEAK_4"] = true }
+local RAINBOW_ACCOUNTS = { ["jonujn8"] = true, [""] = true }
+
+local function getChatDisplayName(originalName)
+    local lower = string.lower(originalName)
+    if CUSTOM_NAMES[lower] then return CUSTOM_NAMES[lower] end
+    return originalName
+end
+local function isCreator(name) return CREATOR_ACCOUNTS[string.lower(name)] == true end
+local function isRainbow(name) return RAINBOW_ACCOUNTS[string.lower(name)] == true end
+
+local messageQueue = {}
+local isSending = false
+local stickerCooldown = 20 
+local lastStickerTime = 0
+local isStickerOnCooldown = false
+local selectedStickerUrl = nil
+
+-- ✅ تم تنظيف القائمة وإزالة التكرار لمنع اللاگ
+local stickerIDs = {  
+  "rbxthumb://type=Asset&id=86336709074077&w=420&h=420",
+  "rbxthumb://type=Asset&id=139741926623794&w=420&h=420", 
+  "rbxthumb://type=Asset&id=94021177383197&w=420&h=420",
+  "rbxthumb://type=Asset&id=122169582163546&w=420&h=420", 
+  "rbxthumb://type=Asset&id=91689480739185&w=420&h=420", 
+  "rbxthumb://type=Asset&id=128206941638669&w=420&h=420", 
+  "rbxthumb://type=Asset&id=94433422552414&w=420&h=420", 
+  "rbxthumb://type=Asset&id=134375974192668&w=420&h=420", 
+  "rbxthumb://type=Asset&id=130368444127818&w=420&h=420", 
+  "rbxthumb://type=Asset&id=98526009112930&w=420&h=420", 
+  "rbxthumb://type=Asset&id=131098290520080&w=420&h=420",
+  "rbxthumb://type=Asset&id=115919279365669&w=420&h=420", 
+  "rbxthumb://type=Asset&id=76958994444775&w=420&h=420",
+  "rbxthumb://type=Asset&id=84785658530383&w=420&h=420", 
+  "rbxthumb://type=Asset&id=101146541690616&w=420&h=420", 
+  "rbxthumb://type=Asset&id=75971558346950&w=420&h=420", 
+  "rbxthumb://type=Asset&id=86948616928582&w=420&h=420", 
+  "rbxthumb://type=Asset&id=92946959090730&w=420&h=420", 
+  "rbxthumb://type=Asset&id=79937896838127&w=420&h=420", 
+  "rbxthumb://type=Asset&id=136715337972321&w=420&h=420",
+  "rbxthumb://type=Asset&id=103921007681560&w=420&h=420",
+  "rbxthumb://type=Asset&id=80326528456194&w=420&h=420",
+  "rbxthumb://type=Asset&id=71638879650420&w=420&h=420", 
+  "rbxthumb://type=Asset&id=74399481230542&w=420&h=420", 
+  "rbxthumb://type=Asset&id=104679573737469&w=420&h=420", 
+  "rbxthumb://type=Asset&id=116620362272399&w=420&h=420", 
+  "rbxthumb://type=Asset&id=119531000446249&w=420&h=420", 
+  "rbxthumb://type=Asset&id=93163855973550&w=420&h=420", 
+  "rbxthumb://type=Asset&id=116431175390835&w=420&h=420", 
+  "rbxthumb://type=Asset&id=104854470548201&w=420&h=420", 
+  "rbxthumb://type=Asset&id=80157054066075&w=420&h=420", 
+  "rbxthumb://type=Asset&id=125052989500568&w=420&h=420",
+  "rbxthumb://type=Asset&id=139863023298306&w=420&h=420", 
+  "rbxthumb://type=Asset&id=89015750606544&w=420&h=420", 
+  "rbxthumb://type=Asset&id=91938714688502&w=420&h=420", 
+  "rbxthumb://type=Asset&id=139128236887832&w=420&h=420", 
+  "rbxthumb://type=Asset&id=137386267869413&w=420&h=420", 
+  "rbxthumb://type=Asset&id=73411421171511&w=420&h=420", 
+  "rbxthumb://type=Asset&id=119109260332104&w=420&h=420", 
+  "rbxthumb://type=Asset&id=96916903736461&w=420&h=420", 
+  "rbxthumb://type=Asset&id=97024398389133&w=420&h=420", 
+  "rbxthumb://type=Asset&id=129012384792831&w=420&h=420", 
+  "rbxthumb://type=Asset&id=136836756972413&w=420&h=420", 
+  "rbxthumb://type=Asset&id=89709462769666&w=420&h=420", 
+  "rbxthumb://type=Asset&id=110452579373621&w=420&h=420",
+  "rbxthumb://type=Asset&id=119620594588181&w=420&h=420", 
+  "rbxthumb://type=Asset&id=94969628121564&w=420&h=420", 
+  "rbxthumb://type=Asset&id=134919232918783&w=420&h=420", 
+  "rbxthumb://type=Asset&id=136879380150763&w=420&h=420", 
+  "rbxthumb://type=Asset&id=101510223937716&w=420&h=420", 
+  "rbxthumb://type=Asset&id=104699897840940&w=420&h=420", 
+  "rbxthumb://type=Asset&id=139128678756932&w=420&h=420", 
+  "rbxthumb://type=Asset&id=74372689003599&w=420&h=420", 
+  "rbxthumb://type=Asset&id=116158098410279&w=420&h=420", 
+  "rbxthumb://type=Asset&id=117363694930129&w=420&h=420", 
+  "rbxthumb://type=Asset&id=73388041689497&w=420&h=420",
+  "rbxthumb://type=Asset&id=80632691471517&w=420&h=420", 
+  "rbxthumb://type=Asset&id=88685674294834&w=420&h=420",
+  "rbxthumb://type=Asset&id=113252350702977&w=420&h=420", 
+  "rbxthumb://type=Asset&id=82760559484667&w=420&h=420",
+  "rbxthumb://type=Asset&id=85269218361147&w=420&h=420", 
+  "rbxthumb://type=Asset&id=91446227201061&w=420&h=420",
+  "rbxthumb://type=Asset&id=131825642772993&w=420&h=420", 
+  "rbxthumb://type=Asset&id=83488750494628&w=420&h=420",
+  "rbxthumb://type=Asset&id=107382495564278&w=420&h=420", 
+  "rbxthumb://type=Asset&id=89347217517225&w=420&h=420",
+  "rbxthumb://type=Asset&id=70514243253567&w=420&h=420", 
+  "rbxthumb://type=Asset&id=100956567958166&w=420&h=420",
+  "rbxthumb://type=Asset&id=136672362562649&w=420&h=420", 
+  "rbxthumb://type=Asset&id=71645772901627&w=420&h=420",
+  "rbxthumb://type=Asset&id=103132892959691&w=420&h=420", 
+  "rbxthumb://type=Asset&id=90364933157263&w=420&h=420",
+  "rbxthumb://type=Asset&id=132425529210764&w=420&h=420", 
+  "rbxthumb://type=Asset&id=72694981827877&w=420&h=420",
+  "rbxthumb://type=Asset&id=76926491557689&w=420&h=420", 
+  "rbxthumb://type=Asset&id=111021865740008&w=420&h=420",
+  "rbxthumb://type=Asset&id=96376722978692&w=420&h=420", 
+  "rbxthumb://type=Asset&id=127056679363364&w=420&h=420",
+  "rbxthumb://type=Asset&id=134522073255278&w=420&h=420", 
+  "rbxthumb://type=Asset&id=106435865600563&w=420&h=420",
+  "rbxthumb://type=Asset&id=91792036280357&w=420&h=420", 
+  "rbxthumb://type=Asset&id=132716700994483&w=420&h=420",
+  "rbxthumb://type=Asset&id=71358692358836&w=420&h=420", 
+  "rbxthumb://type=Asset&id=107094065601074&w=420&h=420",
+  "rbxthumb://type=Asset&id=98080953984116&w=420&h=420", 
+  "rbxthumb://type=Asset&id=100985738475871&w=420&h=420",
+  "rbxthumb://type=Asset&id=79285321382888&w=420&h=420", 
+  "rbxthumb://type=Asset&id=82716683136770&w=420&h=420",
+  "rbxthumb://type=Asset&id=84062115733603&w=420&h=420", 
+  "rbxthumb://type=Asset&id=82443773212358&w=420&h=420",
+  "rbxthumb://type=Asset&id=139103226283110&w=420&h=420", 
+  "rbxthumb://type=Asset&id=102667822545867&w=420&h=420",
+  "rbxthumb://type=Asset&id=75166516948426&w=420&h=420", 
+  "rbxthumb://type=Asset&id=108443241948299&w=420&h=420",
+  "rbxthumb://type=Asset&id=100913429736788&w=420&h=420",
+}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Far3onChatGui"
+ScreenGui.Parent = uiParent
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local currentPrivateTarget = nil
+
+-- ==========================================
+-- ✅ ألوان الأسماء
+-- ==========================================
+local ROBLOX_NAME_COLORS = {
+    Color3.fromRGB(196, 40, 28), Color3.fromRGB(13, 105, 172), Color3.fromRGB(39, 70, 45),
+    Color3.fromRGB(45, 45, 45), Color3.fromRGB(194, 101, 21), Color3.fromRGB(133, 142, 2),
+    Color3.fromRGB(245, 205, 47), Color3.fromRGB(98, 37, 209), Color3.fromRGB(255, 140, 26),
+    Color3.fromRGB(0, 162, 255),
+}
+
+local function getPlayerColor(name)
+    local lowerName = string.lower(name)
+    if isCreator(lowerName) or isRainbow(lowerName) then return "rgb(255,215,0)" end
+    local hash = 0
+    for i = 1, #name do hash = (hash * 31 + string.byte(name, i)) % 2147483647 end
+    local colorIndex = (hash % #ROBLOX_NAME_COLORS) + 1
+    local color = ROBLOX_NAME_COLORS[colorIndex]
+    return string.format("rgb(%d,%d,%d)", math.floor(color.R * 255), math.floor(color.G * 255), math.floor(color.B * 255))
+end
+
+-- ==========================================
+-- بناء الواجهة (UI)
+-- ==========================================
+local Window = Instance.new("Frame")
+Window.Name = "Window"
+Window.Size = UDim2.new(0, 335, 0, 235) 
+Window.Position = UDim2.new(0.5, -180, 0.5, -130)
+Window.BackgroundColor3 = Color3.fromRGB(30, 8, 8)
+Window.BackgroundTransparency = 0.45
+Window.BorderSizePixel = 0
+Window.Parent = ScreenGui
+
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 24, 1, 24)
+Shadow.Position = UDim2.new(0, -12, 0, -12)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://1316045217"
+Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.ImageTransparency = 0.4
+Shadow.ScaleType = Enum.ScaleType.Slice
+Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+Shadow.ZIndex = 0
+Shadow.Parent = Window
+Instance.new("UICorner", Window).CornerRadius = UDim.new(0, 12)
+
+local WindowStroke = Instance.new("UIStroke", Window)
+WindowStroke.Color = Color3.fromRGB(255, 50, 50)
+WindowStroke.Thickness = 2
+WindowStroke.Transparency = 0.2
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TitleBar.BackgroundTransparency = 1
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = Window
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 110, 1, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "FAR3ON"
+Title.TextColor3 = Color3.fromRGB(250, 250, 250)
+Title.Font = Enum.Font.GothamBlack
+Title.TextSize = 17
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+local ChatBadge = Instance.new("Frame")
+ChatBadge.Size = UDim2.new(0, 90, 0, 18)
+ChatBadge.Position = UDim2.new(0, 100, 0, 10)
+ChatBadge.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
+ChatBadge.BorderSizePixel = 0
+ChatBadge.Parent = TitleBar
+Instance.new("UICorner", ChatBadge).CornerRadius = UDim.new(0, 0)
+
+local ChatText = Instance.new("TextLabel")
+ChatText.Size = UDim2.new(1, 0, 1, 0)
+ChatText.BackgroundTransparency = 1
+ChatText.Text = "CHAT V0.4"
+ChatText.TextColor3 = Color3.fromRGB(0, 0, 0)
+ChatText.Font = Enum.Font.GothamBlack
+ChatText.TextSize = 15
+ChatText.TextXAlignment = Enum.TextXAlignment.Center
+ChatText.TextYAlignment = Enum.TextYAlignment.Center
+ChatText.Parent = ChatBadge
+
+local SettingsButton = Instance.new("TextButton")
+SettingsButton.Size = UDim2.new(0, 28, 0, 28)
+SettingsButton.Position = UDim2.new(1, -110, 0, 6)
+SettingsButton.BackgroundColor3 = Color3.fromRGB(45, 50, 60)
+SettingsButton.BorderSizePixel = 0
+SettingsButton.Text = "⚙️"
+SettingsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SettingsButton.TextSize = 15
+SettingsButton.AutoButtonColor = true
+SettingsButton.Parent = TitleBar
+Instance.new("UICorner", SettingsButton).CornerRadius = UDim.new(0, 6)
+
+local InfoButton = Instance.new("TextButton")
+InfoButton.Size = UDim2.new(0, 28, 0, 28)
+InfoButton.Position = UDim2.new(1, -75, 0, 6)
+InfoButton.BackgroundColor3 = Color3.fromRGB(45, 50, 60)
+InfoButton.BackgroundTransparency = 0.2
+InfoButton.BorderSizePixel = 0
+InfoButton.Text = "⚒"
+InfoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfoButton.TextSize = 20
+InfoButton.Font = Enum.Font.GothamBold
+InfoButton.AutoButtonColor = true
+InfoButton.Parent = TitleBar
+Instance.new("UICorner", InfoButton).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", InfoButton).Color = Color3.fromRGB(200, 40, 40)
+
+local InfoMenu = Instance.new("Frame")
+InfoMenu.Size = UDim2.new(0, 220, 0, 320)
+InfoMenu.Position = UDim2.new(1, -75, 0, 40)
+InfoMenu.BackgroundColor3 = Color3.fromRGB(25, 29, 36)
+InfoMenu.BackgroundTransparency = 0.05
+InfoMenu.BorderSizePixel = 0
+InfoMenu.Visible = false
+InfoMenu.ZIndex = 100
+InfoMenu.Parent = ScreenGui
+Instance.new("UICorner", InfoMenu).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", InfoMenu).Color = Color3.fromRGB(200, 40, 40)
+
+local SquareImage = Instance.new("ImageLabel")
+SquareImage.Size = UDim2.new(0, 80, 0, 80)
+SquareImage.Position = UDim2.new(0.5, -40, 0, 15)
+SquareImage.BackgroundTransparency = 1
+SquareImage.Image = "rbxassetid://81640651401616"
+SquareImage.ZIndex = 11
+SquareImage.Parent = InfoMenu
+
+local RightsLabel = Instance.new("TextLabel")
+RightsLabel.Size = UDim2.new(1, 0, 0, 25)
+RightsLabel.Position = UDim2.new(0, 0, 0, 105)
+RightsLabel.BackgroundTransparency = 1
+RightsLabel.Text = "حقوق : فرعون | Rights : FAR3ON"
+RightsLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+RightsLabel.Font = Enum.Font.GothamBold
+RightsLabel.TextSize = 13
+RightsLabel.ZIndex = 11
+RightsLabel.Parent = InfoMenu
+
+local PersonalTikTokBtn = Instance.new("TextButton")
+PersonalTikTokBtn.Size = UDim2.new(1, -20, 0, 45)
+PersonalTikTokBtn.Position = UDim2.new(0, 10, 0, 145)
+PersonalTikTokBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+PersonalTikTokBtn.BackgroundTransparency = 0.2
+PersonalTikTokBtn.BorderSizePixel = 0
+PersonalTikTokBtn.Text = "حساب تيك توك الشخصي\nPersonal TikTok Account\n@qxbrz"
+PersonalTikTokBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PersonalTikTokBtn.TextSize = 11
+PersonalTikTokBtn.Font = Enum.Font.GothamBold
+PersonalTikTokBtn.ZIndex = 11
+PersonalTikTokBtn.Parent = InfoMenu
+Instance.new("UICorner", PersonalTikTokBtn).CornerRadius = UDim.new(0, 6)
+PersonalTikTokBtn.MouseButton1Click:Connect(function()
+    if setclipboard then setclipboard("qxbrz") PersonalTikTokBtn.Text = "تم النسخ! ✅\nCopied!\n@qxbrz" task.wait(1.5) PersonalTikTokBtn.Text = "حساب تيك توك الشخصي\nPersonal TikTok Account\n@qxbrz" end
+end)
+
+local ChatTikTokBtn = Instance.new("TextButton")
+ChatTikTokBtn.Size = UDim2.new(1, -20, 0, 45)
+ChatTikTokBtn.Position = UDim2.new(0, 10, 0, 200)
+ChatTikTokBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+ChatTikTokBtn.BackgroundTransparency = 0.2
+ChatTikTokBtn.BorderSizePixel = 0
+ChatTikTokBtn.Text = "حساب تيك توك الشات\nChat TikTok Account\n@far3onchat"
+ChatTikTokBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ChatTikTokBtn.TextSize = 11
+ChatTikTokBtn.Font = Enum.Font.GothamBold
+ChatTikTokBtn.ZIndex = 11
+ChatTikTokBtn.Parent = InfoMenu
+Instance.new("UICorner", ChatTikTokBtn).CornerRadius = UDim.new(0, 6)
+ChatTikTokBtn.MouseButton1Click:Connect(function()
+    if setclipboard then setclipboard("far3onchat") ChatTikTokBtn.Text = "تم النسخ! ✅\nCopied!\n@far3onchat" task.wait(1.5) ChatTikTokBtn.Text = "حساب تيك توك الشات\nChat TikTok Account\n@far3onchat" end
+end)
+
+local function updateInfoMenuPosition()
+    if not InfoMenu.Visible then return end
+    local btnPos = InfoButton.AbsolutePosition
+    local btnSize = InfoButton.AbsoluteSize
+    InfoMenu.Position = UDim2.fromOffset(btnPos.X + (btnSize.X / 2) - 110, btnPos.Y + btnSize.Y + 5)
+end
+InfoButton.MouseButton1Click:Connect(function() InfoMenu.Visible = not InfoMenu.Visible if InfoMenu.Visible then updateInfoMenuPosition() end end)
+RunService.RenderStepped:Connect(updateInfoMenuPosition)
+
+local DiscordButton = Instance.new("TextButton")
+DiscordButton.Size = UDim2.new(0, 28, 0, 28)
+DiscordButton.Position = UDim2.new(1, -42, 0, 6)
+DiscordButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+DiscordButton.BorderSizePixel = 0
+DiscordButton.Text = ""
+DiscordButton.AutoButtonColor = true
+DiscordButton.Parent = TitleBar
+Instance.new("UICorner", DiscordButton).CornerRadius = UDim.new(0, 6)
+local DiscordIcon = Instance.new("ImageLabel")
+DiscordIcon.Size = UDim2.new(0, 20, 0, 20)
+DiscordIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
+DiscordIcon.BackgroundTransparency = 1
+DiscordIcon.Image = "rbxassetid://112607146459388"
+DiscordIcon.ScaleType = Enum.ScaleType.Fit
+DiscordIcon.Parent = DiscordButton
+DiscordButton.MouseButton1Click:Connect(function()
+    local discordLink = "https://discord.gg/UWXpzg8sr"
+    if setclipboard then setclipboard(discordLink) end
+    pcall(function() game:GetService("GuiService"):OpenBrowserWindow(discordLink) end)
+    DiscordIcon.ImageTransparency = 0.5
+    task.wait(0.2)
+    DiscordIcon.ImageTransparency = 0
+    createSideNotification("System", "✅ تم نسخ لينك الديسكورد", player.UserId, false, false)
+end)
+
+-- ==========================================
+-- ✅ إطار الإعدادات الجديد (مع أزرار التثبيت)
+-- ==========================================
+local SettingsMenu = Instance.new("Frame")
+SettingsMenu.Size = UDim2.new(0, 170, 0, 165) -- تم زيادة الطول لاستيعاب الأزرار الجديدة
+SettingsMenu.Position = UDim2.new(1, -180, 0, 45)
+SettingsMenu.BackgroundColor3 = Color3.fromRGB(25, 29, 36)
+SettingsMenu.BackgroundTransparency = 0.1
+SettingsMenu.BorderSizePixel = 0
+SettingsMenu.Visible = false
+SettingsMenu.ZIndex = 10
+SettingsMenu.Parent = Window
+Instance.new("UICorner", SettingsMenu).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", SettingsMenu).Color = Color3.fromRGB(200, 40, 40)
+
+local DevLabel = Instance.new("TextLabel")
+DevLabel.Size = UDim2.new(1, 0, 0, 28)
+DevLabel.Position = UDim2.new(0, 0, 0, 5)
+DevLabel.BackgroundTransparency = 1
+DevLabel.Text = " 🗼  "
+DevLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+DevLabel.Font = Enum.Font.GothamBold
+DevLabel.TextSize = 13
+DevLabel.Parent = SettingsMenu
+
+local UpdateLabel = Instance.new("TextLabel")
+UpdateLabel.Size = UDim2.new(1, 0, 0, 22)
+UpdateLabel.Position = UDim2.new(0, 0, 0, 33)
+UpdateLabel.BackgroundTransparency = 1
+UpdateLabel.Text = " "
+UpdateLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+UpdateLabel.Font = Enum.Font.Gotham
+UpdateLabel.TextSize = 11
+UpdateLabel.Parent = SettingsMenu
+
+-- متغيرات حالة التثبيت
+local isChatFixed = false
+local isButtonFixed = true -- ✅ تم التعديل: الزر ثابت افتراضياً
+
+-- زر تثبيت الشات
+local FixChatBtn = Instance.new("TextButton")
+FixChatBtn.Size = UDim2.new(1, -10, 0, 30)
+FixChatBtn.Position = UDim2.new(0, 5, 0, 60)
+FixChatBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+FixChatBtn.BackgroundTransparency = 0.3
+FixChatBtn.BorderSizePixel = 0
+FixChatBtn.Text = "🔒 تثبيت الشات: OFF"
+FixChatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FixChatBtn.Font = Enum.Font.GothamBold
+FixChatBtn.TextSize = 12
+FixChatBtn.Parent = SettingsMenu
+Instance.new("UICorner", FixChatBtn).CornerRadius = UDim.new(0, 4)
+
+FixChatBtn.MouseButton1Click:Connect(function()
+    isChatFixed = not isChatFixed
+    if isChatFixed then
+        FixChatBtn.Text = "🔒 تثبيت الشات: ON"
+        FixChatBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    else
+        FixChatBtn.Text = "🔓 تثبيت الشات: OFF"
+        FixChatBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    end
+end)
+
+-- زر تثبيت الزر الجانبي
+local FixBtnToggle = Instance.new("TextButton")
+FixBtnToggle.Size = UDim2.new(1, -10, 0, 30)
+FixBtnToggle.Position = UDim2.new(0, 5, 0, 95)
+FixBtnToggle.BackgroundColor3 = Color3.fromRGB(200, 40, 40) -- ✅ لون أحمر لأنه مفعل افتراضياً
+FixBtnToggle.BackgroundTransparency = 0.3
+FixBtnToggle.BorderSizePixel = 0
+FixBtnToggle.Text = "🔒 تثبيت الزر: ON" -- ✅ النص ON افتراضياً
+FixBtnToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+FixBtnToggle.Font = Enum.Font.GothamBold
+FixBtnToggle.TextSize = 12
+FixBtnToggle.Parent = SettingsMenu
+Instance.new("UICorner", FixBtnToggle).CornerRadius = UDim.new(0, 4)
+
+FixBtnToggle.MouseButton1Click:Connect(function()
+    isButtonFixed = not isButtonFixed
+    if isButtonFixed then
+        FixBtnToggle.Text = "🔒 تثبيت الزر: ON"
+        FixBtnToggle.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    else
+        FixBtnToggle.Text = "🔓 تثبيت الزر: OFF"
+        FixBtnToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+    end
+end)
+
+-- ==========================================
+-- ✅ زر تشغيل السكربت الكبير (يظهر فقط لـ FAR3ON_EGY1) - اللون أخضر
+-- ==========================================
+local FullScriptBtn = Instance.new("TextButton")
+FullScriptBtn.Size = UDim2.new(1, -10, 0, 30)
+FullScriptBtn.Position = UDim2.new(0, 5, 0, 130) -- مكان الزر الجديد
+FullScriptBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- ✅ لون أخضر
+FullScriptBtn.BackgroundTransparency = 0.3
+FullScriptBtn.BorderSizePixel = 0
+FullScriptBtn.Text = " الشات عام   لل مشرفين"
+FullScriptBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FullScriptBtn.Font = Enum.Font.GothamBold
+FullScriptBtn.TextSize = 11
+FullScriptBtn.Parent = SettingsMenu
+Instance.new("UICorner", FullScriptBtn).CornerRadius = UDim.new(0, 4)
+
+--- التحقق مما إذا كان المستخدم هو FAR3ON_EGY1 أو jonujn8 لإظهار الزر
+local allowedUsers = {["far3on_egy1"] = true, ["jonujn8"] = true, [""] = true}
+FullScriptBtn.Visible = allowedUsers[string.lower(player.Name)] or false
+FullScriptBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/a0FzBnzT"))()
+    end)
+end)
+
+SettingsButton.MouseButton1Click:Connect(function() SettingsMenu.Visible = not SettingsMenu.Visible end)
+
+local MessagesFrame = Instance.new("ScrollingFrame")
+MessagesFrame.Size = UDim2.new(1, -20, 1, -105)
+MessagesFrame.Position = UDim2.new(0, 10, 0, 45)
+MessagesFrame.BackgroundTransparency = 1
+MessagesFrame.BorderSizePixel = 0
+MessagesFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+MessagesFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+MessagesFrame.ScrollBarThickness = 4
+MessagesFrame.ScrollBarImageColor3 = Color3.fromRGB(200, 40, 40)
+MessagesFrame.Parent = Window
+Instance.new("UIListLayout", MessagesFrame).Padding = UDim.new(0, 5)
+
+local PrivateBar = Instance.new("Frame")
+PrivateBar.Size = UDim2.new(1, -20, 0, 28)
+PrivateBar.Position = UDim2.new(0, 10, 1, -80)
+PrivateBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+PrivateBar.BackgroundTransparency = 0.2
+PrivateBar.BorderSizePixel = 0
+PrivateBar.Visible = false
+PrivateBar.ZIndex = 12
+PrivateBar.Parent = Window
+Instance.new("UICorner", PrivateBar).CornerRadius = UDim.new(0, 6)
+local PrivateLabel = Instance.new("TextLabel")
+PrivateLabel.Size = UDim2.new(1, -30, 1, 0)
+PrivateLabel.Position = UDim2.new(0, 10, 0, 0)
+PrivateLabel.BackgroundTransparency = 1
+PrivateLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+PrivateLabel.Font = Enum.Font.GothamBold
+PrivateLabel.TextSize = 12
+PrivateLabel.TextXAlignment = Enum.TextXAlignment.Left
+PrivateLabel.ZIndex = 13
+PrivateLabel.Parent = PrivateBar
+
+local CancelPrivate = Instance.new("TextButton")
+CancelPrivate.Size = UDim2.new(0, 28, 0, 28)
+CancelPrivate.Position = UDim2.new(1, -30, 0.5, -14)
+CancelPrivate.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+CancelPrivate.BackgroundTransparency = 0.3
+CancelPrivate.BorderSizePixel = 0
+CancelPrivate.Text = "✕"
+CancelPrivate.TextColor3 = Color3.fromRGB(255, 255, 255)
+CancelPrivate.Font = Enum.Font.GothamBold
+CancelPrivate.TextSize = 16
+CancelPrivate.ZIndex = 13
+CancelPrivate.Parent = PrivateBar
+Instance.new("UICorner", CancelPrivate).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", CancelPrivate).Color = Color3.fromRGB(255, 80, 80)
+
+local StickerPreviewBar = Instance.new("Frame")
+StickerPreviewBar.Size = UDim2.new(1, -20, 0, 28)
+StickerPreviewBar.Position = UDim2.new(0, 10, 1, -80)
+StickerPreviewBar.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+StickerPreviewBar.BackgroundTransparency = 0.8
+StickerPreviewBar.BorderSizePixel = 0
+StickerPreviewBar.Visible = false
+StickerPreviewBar.ZIndex = 15
+StickerPreviewBar.Parent = Window
+Instance.new("UICorner", StickerPreviewBar).CornerRadius = UDim.new(0, 6)
+local PreviewImage = Instance.new("ImageLabel")
+PreviewImage.Size = UDim2.new(0, 22, 0, 22)
+PreviewImage.Position = UDim2.new(0, 5, 0.5, -11)
+PreviewImage.BackgroundTransparency = 1
+PreviewImage.ScaleType = Enum.ScaleType.Fit
+PreviewImage.ZIndex = 16
+PreviewImage.Parent = StickerPreviewBar
+local PreviewLabel = Instance.new("TextLabel")
+PreviewLabel.Size = UDim2.new(1, -35, 1, 0)
+PreviewLabel.Position = UDim2.new(0, 32, 0, 0)
+PreviewLabel.BackgroundTransparency = 1
+PreviewLabel.Text = "ملصق جاهز..."
+PreviewLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+PreviewLabel.Font = Enum.Font.GothamMedium
+PreviewLabel.TextSize = 11
+PreviewLabel.TextXAlignment = Enum.TextXAlignment.Left
+PreviewLabel.ZIndex = 16
+PreviewLabel.Parent = StickerPreviewBar
+local CancelPreview = Instance.new("TextButton")
+CancelPreview.Size = UDim2.new(0, 22, 0, 22)
+CancelPreview.Position = UDim2.new(1, -24, 0.5, -11)
+CancelPreview.BackgroundTransparency = 1
+CancelPreview.Text = "✕"
+CancelPreview.TextColor3 = Color3.fromRGB(255, 80, 80)
+CancelPreview.Font = Enum.Font.GothamBold
+CancelPreview.TextSize = 13
+CancelPreview.ZIndex = 16
+CancelPreview.Parent = StickerPreviewBar
+CancelPreview.MouseButton1Click:Connect(function() selectedStickerUrl = nil; StickerPreviewBar.Visible = false end)
+
+local InputContainer = Instance.new("Frame")
+InputContainer.Size = UDim2.new(1, -20, 0, 40)
+InputContainer.Position = UDim2.new(0, 10, 1, -45)
+InputContainer.BackgroundTransparency = 1
+InputContainer.Parent = Window
+local InputFrame = Instance.new("TextBox")
+InputFrame.Size = UDim2.new(1, -105, 1, 0)
+InputFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
+InputFrame.BackgroundTransparency = 0.5
+InputFrame.BorderSizePixel = 0
+InputFrame.Text = ""
+InputFrame.PlaceholderText = "...اكتب هنا"
+InputFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+InputFrame.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
+InputFrame.Font = Enum.Font.Gotham
+InputFrame.TextSize = 15 
+InputFrame.TextXAlignment = Enum.TextXAlignment.Left
+InputFrame.Parent = InputContainer
+Instance.new("UICorner", InputFrame).CornerRadius = UDim.new(0, 6)
+
+local SendButton = Instance.new("TextButton")
+SendButton.Size = UDim2.new(0, 50, 1, 0)
+SendButton.Position = UDim2.new(1, -55, 0, 0)
+SendButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+SendButton.BorderSizePixel = 0
+SendButton.Text = "إرسال"
+SendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SendButton.Font = Enum.Font.GothamBold
+SendButton.TextSize = 13
+SendButton.AutoButtonColor = true
+SendButton.Parent = InputContainer
+Instance.new("UICorner", SendButton).CornerRadius = UDim.new(0, 6)
+
+local StickerButton = Instance.new("TextButton")
+StickerButton.Size = UDim2.new(0, 40, 1, 0)
+StickerButton.Position = UDim2.new(1, -100, 0, 0)
+StickerButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+StickerButton.BorderSizePixel = 0
+StickerButton.Text = "🖼️"
+StickerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+StickerButton.Font = Enum.Font.GothamBold
+StickerButton.TextSize = 16
+StickerButton.AutoButtonColor = true
+StickerButton.Parent = InputContainer
+Instance.new("UICorner", StickerButton).CornerRadius = UDim.new(0, 6)
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 50, 0, 60)
+ToggleButton.Position = UDim2.new(0, 14, 0.2, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.BackgroundTransparency = 0
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Text = "C\nH\nA\nT"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 13
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextYAlignment = Enum.TextYAlignment.Center
+ToggleButton.AutoButtonColor = true
+ToggleButton.Parent = ScreenGui
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0) 
+local ToggleStroke = Instance.new("UIStroke", ToggleButton)
+ToggleStroke.Color = Color3.fromRGB(255, 50, 50)
+ToggleStroke.Thickness = 3
+local ToggleShadow = Instance.new("ImageLabel")
+ToggleShadow.Size = UDim2.new(1, 10, 1, 10)
+ToggleShadow.Position = UDim2.new(0, -5, 0, -5)
+ToggleShadow.BackgroundTransparency = 1
+ToggleShadow.Image = "rbxassetid://1316045217"
+ToggleShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+ToggleShadow.ImageTransparency = 0.5
+ToggleShadow.ScaleType = Enum.ScaleType.Slice
+ToggleShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+ToggleShadow.ZIndex = 0
+ToggleShadow.Parent = ToggleButton
+ToggleButton.MouseButton1Click:Connect(function() Window.Visible = not Window.Visible end)
+
+local StickerPicker = Instance.new("Frame")
+StickerPicker.Size = UDim2.new(1, -20, 0, 160)
+StickerPicker.Position = UDim2.new(0, 10, 1, -210)
+StickerPicker.BackgroundColor3 = Color3.fromRGB(20, 23, 30)
+StickerPicker.BackgroundTransparency = 0.05
+StickerPicker.BorderSizePixel = 0
+StickerPicker.Visible = false
+StickerPicker.ZIndex = 20
+StickerPicker.Parent = Window
+Instance.new("UICorner", StickerPicker).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", StickerPicker).Color = Color3.fromRGB(255, 60, 60)
+local CloseStickerBtn = Instance.new("TextButton")
+CloseStickerBtn.Size = UDim2.new(0, 22, 0, 22)
+CloseStickerBtn.Position = UDim2.new(1, -28, 0, 5)
+CloseStickerBtn.BackgroundTransparency = 1
+CloseStickerBtn.Text = ""
+CloseStickerBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseStickerBtn.Font = Enum.Font.GothamBold
+CloseStickerBtn.TextSize = 13
+CloseStickerBtn.ZIndex = 25
+CloseStickerBtn.Parent = StickerPicker
+CloseStickerBtn.MouseButton1Click:Connect(function() StickerPicker.Visible = false end)
+
+local StickerList = Instance.new("ScrollingFrame")
+StickerList.Size = UDim2.new(1, -10, 1, -10)
+StickerList.Position = UDim2.new(0, 5, 0, 5)
+StickerList.BackgroundTransparency = 1
+StickerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+StickerList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+StickerList.ScrollBarThickness = 4
+StickerList.ScrollBarImageColor3 = Color3.fromRGB(255, 60, 60)
+StickerList.ClipsDescendants = true
+StickerList.Parent = StickerPicker
+local listLayout = Instance.new("UIListLayout", StickerList)
+listLayout.Padding = UDim.new(0, 6)
+listLayout.FillDirection = Enum.FillDirection.Horizontal
+listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+listLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Wraps = true
+
+for i, url in ipairs(stickerIDs) do
+    local StickerBtn = Instance.new("ImageButton")
+    StickerBtn.Size = UDim2.new(0, 55, 0, 55)
+    StickerBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+    StickerBtn.BackgroundTransparency = 0.3
+    StickerBtn.Image = url
+    StickerBtn.LayoutOrder = i
+    StickerBtn.Parent = StickerList
+    Instance.new("UICorner", StickerBtn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UIStroke", StickerBtn).Color = Color3.fromRGB(200, 40, 40)
+    StickerBtn.MouseButton1Click:Connect(function()
+        if isStickerOnCooldown then return end
+        selectedStickerUrl = url
+        PreviewImage.Image = url
+        StickerPreviewBar.Visible = true
+        StickerPicker.Visible = false
+    end)
+end
+StickerButton.MouseButton1Click:Connect(function()
+    if isStickerOnCooldown then return end
+    StickerPicker.Visible = not StickerPicker.Visible
+end)
+
+-- ==========================================
+-- ✅ نظام الإشعارات الاحترافي
+-- ==========================================
+local NotificationGui = Instance.new("ScreenGui")
+NotificationGui.Name = "Far3onNotifications"
+NotificationGui.Parent = uiParent
+NotificationGui.DisplayOrder = 100
+NotificationGui.ResetOnSpawn = false
+local NotificationHolder = Instance.new("Frame")
+NotificationHolder.Size = UDim2.new(0, 300, 0, 500) 
+NotificationHolder.Position = UDim2.new(0, 15, 0, 150)
+NotificationHolder.AnchorPoint = Vector2.new(0, 0)
+NotificationHolder.BackgroundTransparency = 1
+NotificationHolder.Parent = NotificationGui
+local notifLayout = Instance.new("UIListLayout", NotificationHolder)
+notifLayout.Padding = UDim.new(0, 8)
+notifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local notificationQueue = {}
+local isProcessingNotifs = false
+
+local function processNotificationQueue()
+    if isProcessingNotifs then return end
+    isProcessingNotifs = true
+    while #notificationQueue > 0 do
+        local notifData = table.remove(notificationQueue, 1)
+        local Frame = Instance.new("Frame")
+        Frame.Size = UDim2.new(1, 0, 0, 65)
+        Frame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+        Frame.BackgroundTransparency = 0.1
+        Frame.BorderSizePixel = 0
+        Frame.ZIndex = 100
+        Frame.LayoutOrder = tick()
+        Frame.Parent = NotificationHolder
+        Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+        local Accent = Instance.new("Frame")
+        Accent.Size = UDim2.new(0, 4, 1, -20)
+        Accent.Position = UDim2.new(0, 0, 0, 10)
+        Accent.BackgroundColor3 = notifData.isPrivate and Color3.fromRGB(255, 69, 0) or Color3.fromRGB(255, 50, 50)
+        Accent.BorderSizePixel = 0
+        Accent.Parent = Frame
+        Instance.new("UICorner", Accent).CornerRadius = UDim.new(0, 4)
+        local Avatar = Instance.new("ImageLabel")
+        Avatar.Size = UDim2.new(0, 36, 0, 36)
+        Avatar.Position = UDim2.new(0, 12, 0.5, -18)
+        Avatar.BackgroundTransparency = 1
+        Avatar.ZIndex = 102
+        Avatar.Parent = Frame
+        Instance.new("UICorner", Avatar).CornerRadius = UDim.new(1, 0)
+        if notifData.isBot then
+            Avatar.Image = "rbxassetid://112607146459388"
+        else
+            Avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. notifData.senderId .. "&w=420&h=420"
+        end
+        local nameDisplay = notifData.displayName
+        if notifData.isPrivate then nameDisplay = "(PRVT) " .. nameDisplay end
+        local NameLbl = Instance.new("TextLabel")
+        NameLbl.Size = UDim2.new(1, -60, 0, 20)
+        NameLbl.Position = UDim2.new(0, 55, 0, 10)
+        NameLbl.BackgroundTransparency = 1
+        NameLbl.Text = nameDisplay
+        NameLbl.TextColor3 = notifData.isPrivate and Color3.fromRGB(255, 120, 120) or Color3.fromRGB(255, 255, 255)
+        NameLbl.Font = Enum.Font.GothamBold
+        NameLbl.TextSize = 14
+        NameLbl.TextXAlignment = Enum.TextXAlignment.Left
+        NameLbl.TextTruncate = Enum.TextTruncate.AtEnd
+        NameLbl.ZIndex = 102
+        NameLbl.Parent = Frame
+        local ContentObj = Instance.new("TextLabel")
+        ContentObj.Size = UDim2.new(1, -60, 0, 25)
+        ContentObj.Position = UDim2.new(0, 55, 0, 30)
+        ContentObj.BackgroundTransparency = 1
+        ContentObj.Text = notifData.text
+        ContentObj.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ContentObj.Font = Enum.Font.GothamMedium
+        ContentObj.TextSize = 12
+        ContentObj.TextXAlignment = Enum.TextXAlignment.Left
+        ContentObj.TextWrapped = true
+        ContentObj.TextTruncate = Enum.TextTruncate.AtEnd
+        ContentObj.ZIndex = 102
+        ContentObj.Parent = Frame
+        Frame.Position = UDim2.new(0, -50, 0, 0)
+        Frame.BackgroundTransparency = 1
+        NameLbl.TextTransparency = 1
+        Avatar.ImageTransparency = 1
+        Accent.BackgroundTransparency = 1
+        ContentObj.TextTransparency = 1
+        local enterInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        ts:Create(Frame, enterInfo, {Position = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 0.1}):Play()
+        ts:Create(NameLbl, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        ts:Create(Avatar, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+        ts:Create(Accent, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+        ts:Create(ContentObj, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        task.delay(2.5, function()
+            if Frame and Frame.Parent then
+                local exitInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                ts:Create(Frame, exitInfo, {Position = UDim2.new(0, -50, 0, 0), BackgroundTransparency = 1}):Play()
+                ts:Create(NameLbl, exitInfo, {TextTransparency = 1}):Play()
+                ts:Create(Avatar, exitInfo, {ImageTransparency = 1}):Play()
+                ts:Create(Accent, exitInfo, {BackgroundTransparency = 1}):Play()
+                ts:Create(ContentObj, exitInfo, {TextTransparency = 1}):Play()
+                task.delay(0.35, function() if Frame then Frame:Destroy() end end)
+            end
+        end)
+        task.wait(0.3)
+    end
+    isProcessingNotifs = false
+end
+
+function createSideNotification(senderName, text, senderId, isPrivate, isBot)
+    local displayName = getChatDisplayName(senderName)
+    local isSticker = string.sub(text, 1, 8) == "rbxthumb" or string.sub(text, 1, 4) == "http"
+    local displayText = isSticker and "📸 Sticker" or text
+    table.insert(notificationQueue, { displayName = displayName, text = displayText, senderId = senderId, isPrivate = isPrivate, isBot = isBot or false })
+    processNotificationQueue()
+end
+
+local function showBubbleChat(senderName, text)
+    local isSticker = string.sub(text, 1, 8) == "rbxthumb" or string.sub(text, 1, 4) == "http"
+    if isSticker then return end
+    local targetPlayer = Players:FindFirstChild(senderName)
+    if not targetPlayer then return end
+    local character = targetPlayer.Character
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    pcall(function() ChatService:Chat(head, text, Enum.ChatColor.White) end)
+end
+
+local rainbowLabels = {}
+task.spawn(function()
+    while task.wait(0.05) do
+        local hue = (tick() % 3) / 3
+        local color = Color3.fromHSV(hue, 1, 1)
+        local hex = string.format("#%02X%02X%02X", color.R*255, color.G*255, color.B*255)
+        for label, data in pairs(rainbowLabels) do
+            if label and label.Parent then
+                if data.isBot then
+                    label.Text = "<font color='#FFD700' size='12'>[BOT]</font><font color='#FFFFFF' size='12'> " .. data.text .. "</font>"
+                elseif data.isCreator then
+                    label.Text = "<font color='"..hex.."'>:[ CREATOR ]</font>   <font color='"..data.pColor.."'> : [" .. data.displayName .. "]</font><font color='#FFFFFF'> " .. data.text .. "</font>"
+                elseif data.isRainbow then
+                    label.Text = "<font color='"..hex.."'>[" .. data.displayName .. "]:</font><font color='#FFFFFF'> " .. data.text .. "</font>"
+                end
+            else
+                rainbowLabels[label] = nil
+            end
+        end
+    end
+end)
+
+local function safeCheck(text)
+    return #text > 0 and #text <= 170 and not text:find("\n", 0, true) and not text:find("\r", 0, true) 
+end
+local function isStickerMessage(text)
+    return string.sub(text, 1, 8) == "rbxthumb" or string.sub(text, 1, 4) == "http"
+end
+
+local function createPopupMenu(senderName, messageText)
+    if uiParent:FindFirstChild("PopupMenu") then uiParent.PopupMenu:Destroy() end
+    local PopupGui = Instance.new("ScreenGui")
+    PopupGui.Name = "PopupMenu"
+    PopupGui.Parent = uiParent
+    PopupGui.ResetOnSpawn = false
+    PopupGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    PopupGui.DisplayOrder = 999
+    local Backdrop = Instance.new("Frame")
+    Backdrop.Size = UDim2.new(1, 0, 1, 0)
+    Backdrop.BackgroundTransparency = 1
